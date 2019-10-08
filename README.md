@@ -1,7 +1,7 @@
 # Sertis Tracker Worker Service (Prototype)
 
-> 1)  Heroku: `https://stt-line-service.herokuapp.com/`
-> 2)  Github: `https://github.com/siraphop1995/sertis-tracker-line-service`
+1.  Heroku: `???`
+2.  Github: `https://github.com/siraphop1995/sertis-tracker-worker-service`
 
 ## <a name="contents"></a> Contents
  - [Dependencies](#dependencies)
