@@ -35,7 +35,7 @@ npm install --save
 
 Used following local setting for `.env` file:  
 ```
-PORT=7001
+PORT=7002
 MONGO_URL=mongodb://localhost:27017/line
 ```
 ## <a name="usage"></a> Usage
