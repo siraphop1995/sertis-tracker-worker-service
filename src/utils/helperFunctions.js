@@ -1,14 +1,11 @@
-const User = require('../models/userListModel');
-
 async function updateData(req, res, next) {
   try {
-    const user = await User.find({}, null);
-    console.log(user);
+    console.log('updating');
   } catch (err) {
     next(err);
   }
 }
 
 module.exports = {
-  updateData: updateData
+  updateData
 };

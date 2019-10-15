@@ -4,15 +4,12 @@ module.exports = {
       name: 'worker',
       script: 'server.js',
       env: {
-        PORT: 7002,
-        NODE_ENV: 'development',
-        MONGO_URL: 'mongodb://localhost:27017/stt'
+        PORT: 7004,
+        NODE_ENV: 'development'
       },
       env_production: {
-        PORT: 7002,
-        NODE_ENV: 'production',
-        MONGO_URL:
-          'mongodb+srv://admin:admin@cluster0-mnunz.gcp.mongodb.net/line?retryWrites=true&w=majority'
+        PORT: 7004,
+        NODE_ENV: 'production'
       }
     }
   ].map(service => {
