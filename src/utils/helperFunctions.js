@@ -1,5 +1,4 @@
-var xlsx = require('node-xlsx');
-var fs = require('fs');
+const csv = require('csvtojson');
 
 async function updateData(req, res) {
   try {
@@ -10,11 +9,13 @@ async function updateData(req, res) {
 async function loadFile(req, res, next) {
   try {
     console.log('Loading');
-    // var obj = xlsx.parse(__dirname + '/clockingData.xlsx'); // parses a file
-    const contents = xlsx.parse(fs.readFileSync(__dirname + '/clockingData.xlsx'));
-    // let list = JSON.parse(contents);
+    const csvFilePath = __dirname + '/clockingData.csv';
 
-    console.log(contents[0].data)
+    csv()
+      .fromFile(csvFilePath)
+      .then(jsonObj => {
+        console.log(jsonObj);
+      });
   } catch (err) {
     console.log(err);
   }
