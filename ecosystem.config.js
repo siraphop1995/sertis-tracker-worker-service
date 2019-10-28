@@ -5,7 +5,10 @@ module.exports = {
       script: 'server.js',
       env: {
         PORT: 7004,
-        NODE_ENV: 'development'
+        NODE_ENV: 'development',
+        USER_SERVER: 'http://localhost:7001',
+        DATE_SERVER: 'http://localhost:7002',
+        LINE_SERVER: 'http://localhost:7003',
       },
       env_production: {
         PORT: 7004,
