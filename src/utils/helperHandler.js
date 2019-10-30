@@ -1,6 +1,7 @@
 const csv = require('csvtojson');
-const axios = require('axios');
-const { USER_SERVER, DATE_SERVER, LINE_SERVER } = process.env;
+const db = require('./dbHandler');
+const csvFilePath = __dirname + '/clockingData.csv';
+
 updateData = async () => {
   try {
     console.log('updating');
@@ -11,36 +12,21 @@ loadFile = async () => {
   try {
     console.log('Loading...');
     const date = `10/10/2019`;
-
-    await _handleDate(date);
+    const filterList = await _handleDate(date);
+    console.log(filterList);
+    console.log('END');
   } catch (err) {
     console.log(err);
   }
 };
 
 _handleDate = async date => {
-  console.log(date);
-  const csvFilePath = __dirname + '/clockingData.csv';
   const clockingList = await csv().fromFile(csvFilePath);
   const timeList = clockingList.filter(clocking => {
     return clocking.date === date;
   });
-  const userList = await _getUserList();
-  const filterList = _filterList(userList, timeList);
-  console.log(filterList);
-  console.log('END');
-};
-
-_getUserList = async () => {
-  return (await axios.get(`${USER_SERVER}/getAllUsers`)).data.map(user => {
-    return {
-      _id: user._id,
-      lineId: user.lineId,
-      employeeId: user.employeeId,
-      inTime: undefined,
-      outTime: undefined
-    };
-  });
+  const userList = await db.getUserList();
+  return _filterList(userList, timeList);
 };
 
 _filterList = (userList, timeList) => {
