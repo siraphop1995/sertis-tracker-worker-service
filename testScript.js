@@ -1,3 +1,3 @@
-const helper = require('./src/utils/helperFunctions')
+const helper = require('./src/utils/helperHandler')
 
 helper.loadFile()

@@ -879,8 +879,7 @@ st001,Tee,Vachiramon,CEO,14:53:02,09/10/2019,1,OUT,device002
 st001,Tee,Vachiramon,CEO,14:51:35,09/10/2019,1,IN,device001
 st001,Tee,Vachiramon,CEO,14:51:33,09/10/2019,1,IN,device001
 st049,Tayut,Tanganurakpongsa,Communications,14:47:54,09/10/2019,1,IN,device001
-st154,Guy Frederick,,,,,,,
-,Andrews,Public Relation & Corporate Communications,14:44:37,09/10/2019,1,OUT,device002,
+st154,Guy Frederick,Andrews,Public Relation & Corporate Communications,14:44:37,09/10/2019,1,OUT,device002
 st049,Tayut,Tanganurakpongsa,Communications,14:42:05,09/10/2019,1,OUT,device002
 st040,Jussi  Vilhelmi,Jousimo,Data Science,14:27:17,09/10/2019,1,IN,device001
 st175,Alexis,Semren,Machine Learning & Data Engineering,14:26:43,09/10/2019,1,IN,device001
