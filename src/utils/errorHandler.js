@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (err, req, res, next) => {
+module.exports = err => {
   console.log('errorHandler');
-  console.error(err.message);
+  console.error(err.message, 'at', err.location);
 };
