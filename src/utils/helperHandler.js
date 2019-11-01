@@ -137,9 +137,6 @@ _mapUserData = userList => {
 _verifyUserTime = async userList => {
   return _mapUserData(
     userList.map(user => {
-      if (user.uid == 'st011') {
-        user.inTime = '12:35:55';
-      }
       let { inTime, outTime } = user;
       if (!inTime || !outTime) {
         user.status = 'reject';
@@ -149,17 +146,14 @@ _verifyUserTime = async userList => {
       let breakHour = _checkInTime(inTime);
       breakHour = breakHour ? breakHour : [01, 00];
       console.log(user.uid, breakHour);
-      const workHour = _findTimeDiff(inTime, outTime);
+      const totalWorkHour = _findTimeDiff(inTime, outTime);
+      const actualWorkHour = _subtractTime(totalWorkHour, breakHour);
+      const [tH, tM] = totalWorkHour;
+      const [aH, aM] = actualWorkHour;
 
-      const [hh, mm] = workHour;
-      user.totalHour = `${hh}:${mm}`;
-      user.actualHour = _subtractTime(workHour, breakHour);
-
-      if (hh >= 9) {
-        user.status = 'verify';
-      } else {
-        user.status = 'incomplete';
-      }
+      user.totalHour = `${tH}:${tM}`;
+      user.actualHour = `${aH}:${aM}`;
+      user.status = aH >= 8 ? 'verify' : 'incomplete';
 
       return user;
     })
@@ -199,7 +193,7 @@ _subtractTime = (workHour, breaKHour) => {
   var ss = Math.floor(msec / 1000);
   msec -= ss * 1000;
 
-  return `${hh}:${mm}`;
+  return [hh, mm];
 };
 
 _parseTime = time => time.split(':').map(t => parseInt(t, 10));
