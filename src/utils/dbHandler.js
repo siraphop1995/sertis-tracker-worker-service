@@ -17,10 +17,25 @@ getUserList = async () => {
 findDate = async dateQuery => {
   return (await axios.post(`${DATE_SERVER}/findDate`, {
     dateQuery: dateQuery
-  })).data.date
+  })).data.date;
+};
+
+createDate = async dateQuery => {
+  return (await axios.post(`${DATE_SERVER}/createDate`, {
+    dateQuery: dateQuery
+  })).data.date;
+};
+
+updateDateUser = async (userList, dateId) => {
+  return (await axios.post(`${DATE_SERVER}/updateDateUser`, {
+    userList: userList,
+    dateId: dateId
+  })).data.date;
 };
 
 module.exports = {
   getUserList,
-  findDate
+  findDate,
+  createDate,
+  updateDateUser
 };

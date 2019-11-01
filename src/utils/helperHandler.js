@@ -3,11 +3,19 @@ const db = require('./dbHandler');
 const csvFilePath = __dirname + '/clockingData.csv';
 const errorHandler = require('./errorHandler');
 
-loadFile = async () => {
+loadFile = async date => {
   try {
     console.log('Loading...');
-    const date = `10/10/2019`;
+    date = '08/10/2019';
 
+    // get selected from db
+    let dateRes = await db.findDate(date);
+    dateRes = dateRes ? dateRes : await db.createDate(date);
+    const { dateType } = dateRes;
+    if (dateType !== 'workday') {
+      console.log(`Date is a ${dateType}, exiting......`);
+      return;
+    }
     //get a timeList of selected date
     const timeList = await _handleDate(date);
 
@@ -17,13 +25,11 @@ loadFile = async () => {
     // get a list of user with filter IN and OUT time
     const filterUserList = _filterList(userList, timeList);
 
-    // get selected from db
-    const dbRes = await db.findDate(date);
-    console.log(dbRes);
-
     const verifyUserList = await _verifyUserTime(filterUserList);
 
-    // console.log(verifyUserList);
+    // const updateRes = await db.updateDateUser(verifyUserList, dateRes._id);
+
+    console.log(verifyUserList);
     console.log('END');
   } catch (err) {
     err.location = 'loadFile()';
@@ -112,40 +118,109 @@ _handleOutTime = (oldTime, newTime) => {
     : oldTime;
 };
 
-_verifyUserTime = async userList => {
+_mapUserData = userList => {
   return userList.map(user => {
-    const { inTime, outTime } = user;
-    if (!inTime || !outTime) {
-      user.status = 'reject';
-      return user;
-    }
-    const [inH, inM] = _parseTime(inTime);
-    const [outH, outM] = _parseTime(outTime);
-    var inDate = new Date(2000, 0, 1, inH, inM);
-    var outDate = new Date(2000, 0, 1, outH, outM);
-    var diff = outDate - inDate;
-    var msec = diff;
-    var hh = Math.floor(msec / 1000 / 60 / 60);
-    msec -= hh * 1000 * 60 * 60;
-    var mm = Math.floor(msec / 1000 / 60);
-    msec -= mm * 1000 * 60;
-    var ss = Math.floor(msec / 1000);
-    msec -= ss * 1000;
-    user.totalHour = `${hh}.${mm}`;
-    if (hh >= 9) {
-      user.status = 'verify';
-      user.actual = `${hh - 1}.${mm}`;
-    } else {
-      user.statis = 'incomplete';
-    }
-    console.log(user.uid, `${outH}:${outM}-${inH}:${inM}`, '=>', `${hh}:${mm}`);
-    return user;
+    return {
+      _id: user._id,
+      uid: user.uid,
+      lid: user.lid,
+      data: {
+        status: user.status,
+        inTime: user.inTime,
+        outTime: user.outTime,
+        totalHour: user.totalHour,
+        actualHour: user.actualHour
+      }
+    };
   });
+};
+_verifyUserTime = async userList => {
+  return _mapUserData(
+    userList.map(user => {
+      if (user.uid == 'st011') {
+        user.inTime = '12:35:55';
+      }
+      let { inTime, outTime } = user;
+      if (!inTime || !outTime) {
+        user.status = 'reject';
+        return user;
+      }
+
+      let breakHour = _checkInTime(inTime);
+      breakHour = breakHour ? breakHour : [01, 00];
+      console.log(user.uid, breakHour);
+      const workHour = _findTimeDiff(inTime, outTime);
+
+      const [hh, mm] = workHour;
+      user.totalHour = `${hh}:${mm}`;
+      user.actualHour = _subtractTime(workHour, breakHour);
+
+      if (hh >= 9) {
+        user.status = 'verify';
+      } else {
+        user.status = 'incomplete';
+      }
+
+      return user;
+    })
+  );
+};
+
+_findTimeDiff = (inTime, outTime) => {
+  const [inH, inM] = _parseTime(inTime);
+  const [outH, outM] = _parseTime(outTime);
+  var inDate = new Date(2000, 0, 1, inH, inM);
+  var outDate = new Date(2000, 0, 1, outH, outM);
+  var diff = outDate - inDate;
+  var msec = diff;
+  var hh = Math.floor(msec / 1000 / 60 / 60);
+  msec -= hh * 1000 * 60 * 60;
+  var mm = Math.floor(msec / 1000 / 60);
+  msec -= mm * 1000 * 60;
+  var ss = Math.floor(msec / 1000);
+  msec -= ss * 1000;
+
+  console.log(`${inH}:${inM}-${outH}:${outM}`, '=>', `${hh}:${mm}`);
+  return [hh, mm];
+};
+
+_subtractTime = (workHour, breaKHour) => {
+  const [wH, wM] = workHour;
+  const [bH, bM] = breaKHour;
+
+  var breaKHour = new Date(2000, 0, 1, bH, bM);
+  var workHour = new Date(2000, 0, 1, wH, wM);
+  var diff = workHour - breaKHour;
+  var msec = diff;
+  var hh = Math.floor(msec / 1000 / 60 / 60);
+  msec -= hh * 1000 * 60 * 60;
+  var mm = Math.floor(msec / 1000 / 60);
+  msec -= mm * 1000 * 60;
+  var ss = Math.floor(msec / 1000);
+  msec -= ss * 1000;
+
+  return `${hh}:${mm}`;
 };
 
 _parseTime = time => time.split(':').map(t => parseInt(t, 10));
 
-_calculateTime = () => {};
+_checkInTime = time => {
+  const [inH, inM] = _parseTime(time);
+
+  let timeDiff = undefined;
+  switch (inH) {
+    case 12:
+      if (inM >= 30) {
+        timeDiff = _findTimeDiff(time, '13:30:00');
+      }
+      break;
+    case 13:
+      if (inM <= 30) {
+        timeDiff = _findTimeDiff(time, '13:30:00');
+      }
+  }
+  return timeDiff;
+};
 
 module.exports = {
   updateData,

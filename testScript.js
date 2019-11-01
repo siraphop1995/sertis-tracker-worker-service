@@ -1,3 +1,5 @@
-const helper = require('./src/utils/helperHandler')
+const helper = require('./src/utils/helperHandler');
 
-helper.loadFile()
+const date = `10/10/2019`;
+
+helper.loadFile(date);
