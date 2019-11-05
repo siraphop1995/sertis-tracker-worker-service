@@ -3,45 +3,48 @@ const db = require('./dbHandler');
 const csvFilePath = __dirname + '/clockingData.csv';
 const errorHandler = require('./errorHandler');
 
-updateLineData = async date => {
+handleCornJob = async date => {
   try {
-    date = '10/10/2019';
+    date = '08/10/2019';
+
+    _updateLineData(date);
+
+    // // get selected from db
+    // let dateRes = await db.findDate(date);
+    // dateRes = dateRes ? dateRes : await db.createDate(date);
+    // const { dateType } = dateRes;
+    // if (dateType !== 'workday') {
+    //   console.log(`Date is a ${dateType}, exiting......`);
+    //   return;
+    // }
+    // //get a timeList of selected date
+    // const timeList = await _loadDateList(date);
+
+    // // list of all employee
+    // const userList = await db.getUserList();
+
+    // // get a list of user with filter IN and OUT time
+    // const filterUserList = _filterList(userList, timeList);
+
+    // const verifyUserList = await _verifyUserTime(filterUserList);
+
+    // // const updateRes = await db.updateDateUser(verifyUserList, dateRes._id);
+
+    // dateRes.users = verifyUserList;
+    // // console.log(dateRes.users);
+    console.log('END');
   } catch (err) {
+    err.location = 'loadFile()';
     errorHandler(err);
   }
 };
 
-loadFile = async date => {
+_updateLineData = async date => {
   try {
-    console.log('Loading...');
-    date = '08/10/2019';
 
-    // get selected from db
-    let dateRes = await db.findDate(date);
-    dateRes = dateRes ? dateRes : await db.createDate(date);
-    const { dateType } = dateRes;
-    if (dateType !== 'workday') {
-      console.log(`Date is a ${dateType}, exiting......`);
-      return;
-    }
-    //get a timeList of selected date
-    const timeList = await _handleDate(date);
 
-    // list of all employee
-    const userList = await db.getUserList();
-
-    // get a list of user with filter IN and OUT time
-    const filterUserList = _filterList(userList, timeList);
-
-    const verifyUserList = await _verifyUserTime(filterUserList);
-
-    // const updateRes = await db.updateDateUser(verifyUserList, dateRes._id);
-
-    dateRes.users = verifyUserList;
-    console.log(dateRes.users);
-    console.log('END');
   } catch (err) {
-    err.location = 'loadFile()';
+    err.location = '_updateLineData()';
     errorHandler(err);
   }
 };
@@ -50,7 +53,7 @@ loadFile = async date => {
  * Load time data from csv file and filter out only selected
  * date then load userList from database
  */
-_handleDate = async date => {
+_loadDateList = async date => {
   // list of all date form csv
   const clockingList = await csv().fromFile(csvFilePath);
 
@@ -218,6 +221,5 @@ _checkInTime = time => {
 };
 
 module.exports = {
-  updateLineData,
-  loadFile
+  handleCornJob
 };
