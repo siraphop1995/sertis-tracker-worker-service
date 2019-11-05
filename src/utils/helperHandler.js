@@ -3,6 +3,14 @@ const db = require('./dbHandler');
 const csvFilePath = __dirname + '/clockingData.csv';
 const errorHandler = require('./errorHandler');
 
+updateLineData = async date => {
+  try {
+    date = '10/10/2019';
+  } catch (err) {
+    errorHandler(err);
+  }
+};
+
 loadFile = async date => {
   try {
     console.log('Loading...');
@@ -29,18 +37,11 @@ loadFile = async date => {
 
     // const updateRes = await db.updateDateUser(verifyUserList, dateRes._id);
 
-    console.log(verifyUserList);
+    dateRes.users = verifyUserList;
+    console.log(dateRes.users);
     console.log('END');
   } catch (err) {
     err.location = 'loadFile()';
-    errorHandler(err);
-  }
-};
-
-updateData = async () => {
-  try {
-    console.log('updating');
-  } catch (err) {
     errorHandler(err);
   }
 };
@@ -128,32 +129,36 @@ _mapUserData = userList => {
         status: user.status,
         inTime: user.inTime,
         outTime: user.outTime,
-        totalHour: user.totalHour,
-        actualHour: user.actualHour
+        totalWorkTime: user.totalWorkTime,
+        actualWorkTime: user.actualWorkTime,
+        expectedWorkTime: user.expectedWorkTime
       }
     };
   });
 };
+
 _verifyUserTime = async userList => {
   return _mapUserData(
     userList.map(user => {
+      user.expectedWorkTime = 480;
+
       let { inTime, outTime } = user;
+
       if (!inTime || !outTime) {
-        user.status = 'reject';
-        return user;
+        user.totalWorkTime = 0;
+        user.actualWorkTime = 0;
+      } else {
+        let breakHour = _checkInTime(inTime);
+        breakHour = breakHour ? breakHour : 60;
+        const totalWorkTime = _subtractTime(inTime, outTime);
+        const actualWorkTime = totalWorkTime - breakHour;
+        user.totalWorkTime = totalWorkTime;
+        user.actualWorkTime = actualWorkTime;
       }
+      const { actualWorkTime, expectedWorkTime } = user;
 
-      let breakHour = _checkInTime(inTime);
-      breakHour = breakHour ? breakHour : [01, 00];
-      console.log(user.uid, breakHour);
-      const totalWorkHour = _findTimeDiff(inTime, outTime);
-      const actualWorkHour = _subtractTime(totalWorkHour, breakHour);
-      const [tH, tM] = totalWorkHour;
-      const [aH, aM] = actualWorkHour;
-
-      user.totalHour = `${tH}:${tM}`;
-      user.actualHour = `${aH}:${aM}`;
-      user.status = aH >= 8 ? 'verify' : 'incomplete';
+      user.status =
+        actualWorkTime >= expectedWorkTime ? 'verify' : 'incomplete';
 
       return user;
     })
@@ -166,37 +171,33 @@ _findTimeDiff = (inTime, outTime) => {
   var inDate = new Date(2000, 0, 1, inH, inM);
   var outDate = new Date(2000, 0, 1, outH, outM);
   var diff = outDate - inDate;
+
   var msec = diff;
   var hh = Math.floor(msec / 1000 / 60 / 60);
   msec -= hh * 1000 * 60 * 60;
   var mm = Math.floor(msec / 1000 / 60);
-  msec -= mm * 1000 * 60;
-  var ss = Math.floor(msec / 1000);
-  msec -= ss * 1000;
 
-  console.log(`${inH}:${inM}-${outH}:${outM}`, '=>', `${hh}:${mm}`);
-  return [hh, mm];
+  return `${hh}:${mm}`;
 };
 
-_subtractTime = (workHour, breaKHour) => {
-  const [wH, wM] = workHour;
-  const [bH, bM] = breaKHour;
-
-  var breaKHour = new Date(2000, 0, 1, bH, bM);
-  var workHour = new Date(2000, 0, 1, wH, wM);
-  var diff = workHour - breaKHour;
-  var msec = diff;
-  var hh = Math.floor(msec / 1000 / 60 / 60);
-  msec -= hh * 1000 * 60 * 60;
-  var mm = Math.floor(msec / 1000 / 60);
-  msec -= mm * 1000 * 60;
-  var ss = Math.floor(msec / 1000);
-  msec -= ss * 1000;
-
-  return [hh, mm];
+_subtractTime = (inTime, outTime) => {
+  inTime = _toMinute(inTime);
+  outTime = _toMinute(outTime);
+  return outTime - inTime;
 };
 
 _parseTime = time => time.split(':').map(t => parseInt(t, 10));
+
+_toHour = time => {
+  const hh = Math.floor(time / 60);
+  const mm = Math.floor(time - hh * 60);
+  return `${hh}:${mm}`;
+};
+
+_toMinute = time => {
+  const [hh, mm] = _parseTime(time);
+  return hh * 60 + mm;
+};
 
 _checkInTime = time => {
   const [inH, inM] = _parseTime(time);
@@ -217,6 +218,6 @@ _checkInTime = time => {
 };
 
 module.exports = {
-  updateData,
+  updateLineData,
   loadFile
 };
