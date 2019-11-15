@@ -5,33 +5,39 @@ const errorHandler = require('./errorHandler');
 
 handleCornJob = async date => {
   try {
-    date = '08/10/2019';
+    // date = '03/10/2019';
 
-    _updateLineData(date);
+    // get selected from db
+    let dateData = await db.findDate(date);
+    dateData = dateData ? dateData : await db.createDate(date);
 
-    // // get selected from db
-    // let dateRes = await db.findDate(date);
-    // dateRes = dateRes ? dateRes : await db.createDate(date);
-    // const { dateType } = dateRes;
-    // if (dateType !== 'workday') {
-    //   console.log(`Date is a ${dateType}, exiting......`);
-    //   return;
-    // }
+    const { dateType } = dateData;
+    if (dateType !== 'workday') {
+      console.log(`Date is a ${dateType}, exiting......`);
+      return;
+    }
+
+    dateData = await _updateLineData(date, dateData);
+
     // //get a timeList of selected date
-    // const timeList = await _loadDateList(date);
+    const timeList = await _loadDateList(date);
 
-    // // list of all employee
-    // const userList = await db.getUserList();
+    if (timeList.length === 0) {
+      console.log(`No date found, exting......`);
+      return;
+    }
 
-    // // get a list of user with filter IN and OUT time
-    // const filterUserList = _filterList(userList, timeList);
+    // get a list of user with filter IN and OUT time
+    const filterUserList = _filterList(dateData.users, timeList);
 
-    // const verifyUserList = await _verifyUserTime(filterUserList);
+    const verifyUserList = await _verifyUserTime(filterUserList);
 
-    // // const updateRes = await db.updateDateUser(verifyUserList, dateRes._id);
+    const updateRes = await db.updateDateUserList(verifyUserList, dateData._id);
 
-    // dateRes.users = verifyUserList;
-    // // console.log(dateRes.users);
+    dateData.users = verifyUserList;
+    console.log(dateData.users);
+    return Promise.resolve('true');
+
     console.log('END');
   } catch (err) {
     err.location = 'loadFile()';
@@ -39,10 +45,50 @@ handleCornJob = async date => {
   }
 };
 
-_updateLineData = async date => {
+_updateLineData = async (date, dateData) => {
   try {
+    let lineData = await findLine(date);
+    lineData = lineData ? lineData : await db.createLine(date);
+    const { history } = lineData;
 
+    dateData.users = dateData.users.map(user => {
+      user.expectedWorkTime = 480;
+      // find line message of user
+      let lineHistory = history.filter(h => {
+        return (
+          h.uid === user.uid &&
+          h.isVerify &&
+          (h.messageIntent === 'leaveIntent' ||
+            h.messageIntent === 'absentIntent' ||
+            h.messageIntent === 'longAbsentIntent')
+        );
+      });
 
+      // if no line message, exit
+      if (lineHistory.length === 0) return user;
+
+      // return lastest line message of user
+      lineHistory = history.reduce((prev, current) =>
+        prev.timestamp > current.timestamp ? prev : current
+      );
+
+      switch (lineHistory.messageIntent) {
+        case 'leaveIntent':
+          user.expectedWorkTime = 480 - lineHistory.messageVar.time * 60;
+          break;
+        case 'absentIntent':
+          user.expectedWorkTime = 0;
+          break;
+        case 'longAbsentIntent':
+          user.expectedWorkTime = 0;
+          break;
+      }
+      user.lineHistoryId = lineHistory._id;
+      user.lineIntent = lineHistory.messageIntent;
+
+      return user;
+    });
+    return dateData;
   } catch (err) {
     err.location = '_updateLineData()';
     errorHandler(err);
@@ -134,7 +180,9 @@ _mapUserData = userList => {
         outTime: user.outTime,
         totalWorkTime: user.totalWorkTime,
         actualWorkTime: user.actualWorkTime,
-        expectedWorkTime: user.expectedWorkTime
+        expectedWorkTime: user.expectedWorkTime,
+        lineHistoryId: user.lineHistoryId,
+        lineIntent: user.lineIntent
       }
     };
   });
@@ -151,8 +199,11 @@ _verifyUserTime = async userList => {
         user.totalWorkTime = 0;
         user.actualWorkTime = 0;
       } else {
-        let breakHour = _checkInTime(inTime);
+        let breakHour = _checkBreakTime(inTime);
+        if (user.uid === 'st050') console.log('ST050:', breakHour);
+
         breakHour = breakHour ? breakHour : 60;
+
         const totalWorkTime = _subtractTime(inTime, outTime);
         const actualWorkTime = totalWorkTime - breakHour;
         user.totalWorkTime = totalWorkTime;
@@ -161,7 +212,7 @@ _verifyUserTime = async userList => {
       const { actualWorkTime, expectedWorkTime } = user;
 
       user.status =
-        actualWorkTime >= expectedWorkTime ? 'verify' : 'incomplete';
+        actualWorkTime >= expectedWorkTime ? 'complete' : 'incomplete';
 
       return user;
     })
@@ -202,22 +253,23 @@ _toMinute = time => {
   return hh * 60 + mm;
 };
 
-_checkInTime = time => {
+_checkBreakTime = time => {
   const [inH, inM] = _parseTime(time);
 
-  let timeDiff = undefined;
+  let breakTime = 60;
   switch (inH) {
     case 12:
       if (inM >= 30) {
-        timeDiff = _findTimeDiff(time, '13:30:00');
+        breakTime = _findTimeDiff(time, '13:30:00');
       }
       break;
     case 13:
       if (inM <= 30) {
-        timeDiff = _findTimeDiff(time, '13:30:00');
+        breakTime = _findTimeDiff(time, '13:30:00');
       }
   }
-  return timeDiff;
+  if (inH >= 13 && inM > 30) breakTime = 0;
+  return breakTime;
 };
 
 module.exports = {

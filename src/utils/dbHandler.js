@@ -26,16 +26,30 @@ createDate = async dateQuery => {
   })).data.date;
 };
 
-updateDateUser = async (userList, dateId) => {
-  return (await axios.post(`${DATE_SERVER}/updateDateUser`, {
+updateDateUserList = async (userList, dateId) => {
+  return (await axios.post(`${DATE_SERVER}/updateDateUserList`, {
     userList: userList,
     dateId: dateId
   })).data.date;
+};
+
+findLine = async dateQuery => {
+  return (await axios.post(`${LINE_SERVER}/findLine`, {
+    dateQuery: dateQuery
+  })).data.line;
+};
+
+createLine = async dateQuery => {
+  return (await axios.post(`${LINE_SERVER}/createLine`, {
+    dateQuery: dateQuery
+  })).data.line;
 };
 
 module.exports = {
   getUserList,
   findDate,
   createDate,
-  updateDateUser
+  updateDateUserList,
+  findLine,
+  createLine
 };
