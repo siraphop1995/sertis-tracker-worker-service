@@ -1,7 +1,7 @@
 const helper = require('./src/utils/helperHandler');
 const moment = require('moment-timezone');
 
-const date = `10/11/2019`;
+const date = `10/10/2019`;
 
 _multiLoad = async (date, n) => {
   const [dd, mm, yy] = _parseDate(date);

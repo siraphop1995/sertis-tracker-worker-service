@@ -35,10 +35,8 @@ handleCornJob = async date => {
     const updateRes = await db.updateDateUserList(verifyUserList, dateData._id);
 
     dateData.users = verifyUserList;
-    console.log(dateData.users);
-    return Promise.resolve('true');
-
-    console.log('END');
+    console.log('Date found, add complete');
+    return Promise.resolve();
   } catch (err) {
     err.location = 'loadFile()';
     errorHandler(err);
@@ -68,7 +66,7 @@ _updateLineData = async (date, dateData) => {
       if (lineHistory.length === 0) return user;
 
       // return lastest line message of user
-      lineHistory = history.reduce((prev, current) =>
+      lineHistory = lineHistory.reduce((prev, current) =>
         prev.timestamp > current.timestamp ? prev : current
       );
 
@@ -85,6 +83,8 @@ _updateLineData = async (date, dateData) => {
       }
       user.lineHistoryId = lineHistory._id;
       user.lineIntent = lineHistory.messageIntent;
+      user.lineMessage = lineHistory.message;
+      // console.log(user);
 
       return user;
     });
@@ -137,35 +137,44 @@ _filterList = (userList, timeList) => {
 };
 
 _handleInTime = (oldTime, newTime) => {
-  if (!oldTime) return newTime;
+  if (!oldTime) return _removeSecond(newTime);
 
   const [newH, newM] = _parseTime(newTime);
   const [oldH, oldM] = _parseTime(oldTime);
 
-  return newH < oldH
-    ? newTime
-    : newH > oldH
-    ? oldTime
-    : newM < oldM
-    ? newTime
-    : oldTime;
+  return _removeSecond(
+    newH < oldH
+      ? newTime
+      : newH > oldH
+      ? oldTime
+      : newM < oldM
+      ? newTime
+      : oldTime
+  );
 };
 
 _handleOutTime = (oldTime, newTime) => {
-  if (!oldTime) {
-    return newTime;
-  }
+  if (!oldTime) return _removeSecond(newTime);
 
   const [newH, newM] = _parseTime(newTime);
   const [oldH, oldM] = _parseTime(oldTime);
 
-  return newH > oldH
-    ? newTime
-    : newH < oldH
-    ? oldTime
-    : newM > oldM
-    ? newTime
-    : oldTime;
+  return _removeSecond(
+    newH > oldH
+      ? newTime
+      : newH < oldH
+      ? oldTime
+      : newM > oldM
+      ? newTime
+      : oldTime
+  );
+};
+
+_removeSecond = time => {
+  let [hh, mm] = time.split(':')
+  hh = hh.length == 2 ? hh : `0${hh}`;
+  mm = mm.length == 2 ? mm : `0${mm}`;
+  return `${hh}:${mm}`;
 };
 
 _mapUserData = userList => {
@@ -178,11 +187,12 @@ _mapUserData = userList => {
         status: user.status,
         inTime: user.inTime,
         outTime: user.outTime,
-        totalWorkTime: user.totalWorkTime,
-        actualWorkTime: user.actualWorkTime,
-        expectedWorkTime: user.expectedWorkTime,
+        totalWorkTime: _toHour(user.totalWorkTime),
+        actualWorkTime: _toHour(user.actualWorkTime),
+        expectedWorkTime: _toHour(user.expectedWorkTime),
         lineHistoryId: user.lineHistoryId,
-        lineIntent: user.lineIntent
+        lineIntent: user.lineIntent,
+        lineMessage: user.lineMessage
       }
     };
   });
@@ -191,7 +201,9 @@ _mapUserData = userList => {
 _verifyUserTime = async userList => {
   return _mapUserData(
     userList.map(user => {
-      user.expectedWorkTime = 480;
+      user.expectedWorkTime = user.expectedWorkTime
+        ? user.expectedWorkTime
+        : 480;
 
       let { inTime, outTime } = user;
 
@@ -243,8 +255,11 @@ _subtractTime = (inTime, outTime) => {
 _parseTime = time => time.split(':').map(t => parseInt(t, 10));
 
 _toHour = time => {
-  const hh = Math.floor(time / 60);
-  const mm = Math.floor(time - hh * 60);
+  if (!time) return undefined;
+  let hh = Math.floor(time / 60);
+  let mm = Math.floor(time - hh * 60);
+  hh = hh < 10 ? '0' + hh : hh;
+  mm = mm < 10 ? '0' + mm : mm;
   return `${hh}:${mm}`;
 };
 
