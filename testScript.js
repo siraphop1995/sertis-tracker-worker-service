@@ -1,6 +1,5 @@
 const helper = require('./src/utils/helperHandler');
 const moment = require('moment-timezone');
-const { USER_SERVER, DATE_SERVER, LINE_SERVER, AUTH_TOKEN } = process.env;
 
 const date = `22/11/2019`;
 

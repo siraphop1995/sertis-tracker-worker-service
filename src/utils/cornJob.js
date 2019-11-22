@@ -1,19 +1,22 @@
 const cron = require('node-cron');
-const helper = require('./helperFunctions')
+const helper = require('./helperHandler');
+const moment = require('moment-timezone');
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '*/10 * * * * *',
+  '*/20 * * * * *',
   () => {
-    var d = new Date();
-    console.log(d);
-    helper.updateData()
+    var date = moment()
+      .subtract(1, 'day')
+      .tz('Asia/Bangkok')
+      .format('DD/MM/YYYY');
+
+    helper.handleCornJob(date);
   },
   {
     scheduled: true,
     timezone: 'Asia/Bangkok'
   }
 );
-// helper.updateData()
 
 module.exports = cron;

@@ -213,6 +213,7 @@ _verifyUserTime = async userList => {
 
         breakHour = breakHour ? breakHour : 60;
 
+        outTime = _limitOutTime(outTime);
         const totalWorkTime = _subtractTime(inTime, outTime);
         const actualWorkTime = totalWorkTime - breakHour;
         user.totalWorkTime = totalWorkTime;
@@ -263,6 +264,17 @@ _toHour = time => {
 _toMinute = time => {
   const [hh, mm] = _parseTime(time);
   return hh * 60 + mm;
+};
+
+_limitOutTime = time => {
+  let [hh, mm] = _parseTime(time);
+  if (hh > 19) {
+    hh = 19;
+    if (mm > 30) {
+      mm = 30;
+    }
+  }
+  return `${hh}:${mm}`;
 };
 
 _checkBreakTime = time => {
