@@ -18,7 +18,6 @@ handleCornJob = async date => {
     }
 
     dateData = await _updateLineData(date, dateData);
-
     // //get a timeList of selected date
     const timeList = await _loadDateList(date);
 
@@ -84,7 +83,6 @@ _updateLineData = async (date, dateData) => {
       user.lineHistoryId = lineHistory._id;
       user.lineIntent = lineHistory.messageIntent;
       user.lineMessage = lineHistory.message;
-      // console.log(user);
 
       return user;
     });
@@ -171,7 +169,7 @@ _handleOutTime = (oldTime, newTime) => {
 };
 
 _removeSecond = time => {
-  let [hh, mm] = time.split(':')
+  let [hh, mm] = time.split(':');
   hh = hh.length == 2 ? hh : `0${hh}`;
   mm = mm.length == 2 ? mm : `0${mm}`;
   return `${hh}:${mm}`;
@@ -201,10 +199,10 @@ _mapUserData = userList => {
 _verifyUserTime = async userList => {
   return _mapUserData(
     userList.map(user => {
-      user.expectedWorkTime = user.expectedWorkTime
-        ? user.expectedWorkTime
-        : 480;
-
+      user.expectedWorkTime =
+        typeof user.expectedWorkTime != 'undefined'
+          ? user.expectedWorkTime
+          : 480;
       let { inTime, outTime } = user;
 
       if (!inTime || !outTime) {
@@ -212,7 +210,6 @@ _verifyUserTime = async userList => {
         user.actualWorkTime = 0;
       } else {
         let breakHour = _checkBreakTime(inTime);
-        if (user.uid === 'st050') console.log('ST050:', breakHour);
 
         breakHour = breakHour ? breakHour : 60;
 
@@ -255,7 +252,7 @@ _subtractTime = (inTime, outTime) => {
 _parseTime = time => time.split(':').map(t => parseInt(t, 10));
 
 _toHour = time => {
-  if (!time) return undefined;
+  if (typeof time == 'undefined') return undefined;
   let hh = Math.floor(time / 60);
   let mm = Math.floor(time - hh * 60);
   hh = hh < 10 ? '0' + hh : hh;
