@@ -4,8 +4,10 @@ const moment = require('moment-timezone');
 const db = require('./dbHandler');
 
 cron.schedule('*/10 * * * * *', () => {
-  console.log('worker');
-  db.helloUser();
+  let date = moment()
+      .subtract(1, 'day')
+      .tz('Asia/Bangkok');
+    console.log('Run test:', date.format());
 });
 
 // schedule tasks to be run on the server
