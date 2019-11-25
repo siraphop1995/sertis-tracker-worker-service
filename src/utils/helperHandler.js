@@ -29,7 +29,7 @@ handleCornJob = async date => {
     const filterUserList = _filterList(dateData.users, timeList);
 
     const verifyUserList = await _verifyUserTime(filterUserList);
-    // const updateRes = await db.updateDateUserList(verifyUserList, dateData._id);
+    const updateRes = await db.updateDateUserList(verifyUserList, dateData._id);
 
     // dateData.users = verifyUserList;
     // console.log('Date found, add complete');

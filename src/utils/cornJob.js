@@ -4,16 +4,20 @@ const moment = require('moment-timezone');
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '*/10 * * * * *',
+  '* 1 * * *',
   async () => {
     let date = moment()
       .subtract(1, 'day')
       .tz('Asia/Bangkok');
     let success = false;
     let count = 0;
-    let maxCount = 10;
-    // let name = date.format('ddd');
-    // if (name == 'Sat' || name == 'Sun') return;
+    const maxCount = 12;
+    const retryTimer = 300000 //5 min in milisecond
+    let name = date.format('ddd');
+    if (name == 'Sat' || name == 'Sun') {
+      console.log('Weekend, exiting...');
+      return;
+    }
     date = date.format('DD/MM/YYYY');
 
     while (!success && count < maxCount) {
@@ -29,7 +33,7 @@ cron.schedule(
               console.log('cornError:', count);
             });
           resolve();
-        }, count * 1000)
+        }, count * retryTimer)
       );
       count++;
     }
