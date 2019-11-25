@@ -2,6 +2,10 @@ const axios = require('axios');
 const { USER_SERVER, DATE_SERVER, LINE_SERVER, AUTH_TOKEN } = process.env;
 axios.defaults.headers.common['authorization'] = AUTH_TOKEN;
 
+helloUser = async () => {
+  return (await axios.get(`${USER_SERVER}/`)).data;
+};
+
 getUserList = async () => {
   return (await axios.get(`${USER_SERVER}/getAllUsers`)).data.user.map(user => {
     return {
@@ -57,6 +61,7 @@ createLine = async dateQuery => {
 };
 
 module.exports = {
+  helloUser,
   getUserList,
   findDate,
   createDate,

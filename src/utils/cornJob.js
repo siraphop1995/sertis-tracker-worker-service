@@ -1,6 +1,12 @@
 const cron = require('node-cron');
 const helper = require('./helperHandler');
 const moment = require('moment-timezone');
+const db = require('./dbHandler');
+
+cron.schedule('*/10 * * * * *', () => {
+  console.log('worker');
+  db.helloUser();
+});
 
 // schedule tasks to be run on the server
 cron.schedule(
@@ -9,10 +15,12 @@ cron.schedule(
     let date = moment()
       .subtract(1, 'day')
       .tz('Asia/Bangkok');
+    console.log('Run cornJob:', date.format());
+
     let success = false;
     let count = 0;
     const maxCount = 12;
-    const retryTimer = 300000 //5 min in milisecond
+    const retryTimer = 300000; //5 min in milisecond
     let name = date.format('ddd');
     if (name == 'Sat' || name == 'Sun') {
       console.log('Weekend, exiting...');
@@ -26,11 +34,11 @@ cron.schedule(
           await helper
             .handleCornJob(date)
             .then(() => {
-              console.log('cornSuccess:', count);
+              console.log('cornSuccess, count:', count);
               success = true;
             })
             .catch(err => {
-              console.log('cornError:', count);
+              console.log('cornError, count:', count);
             });
           resolve();
         }, count * retryTimer)

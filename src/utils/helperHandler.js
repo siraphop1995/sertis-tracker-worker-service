@@ -1,7 +1,6 @@
 const csv = require('csvtojson');
 const db = require('./dbHandler');
 const csvFilePath = __dirname + '/clockingData.csv';
-const errorHandler = require('./errorHandler');
 
 handleCornJob = async date => {
   try {
@@ -31,8 +30,7 @@ handleCornJob = async date => {
     const verifyUserList = await _verifyUserTime(filterUserList);
     const updateRes = await db.updateDateUserList(verifyUserList, dateData._id);
 
-    // dateData.users = verifyUserList;
-    // console.log('Date found, add complete');
+    console.log('Date found, add complete');
     return Promise.resolve();
   } catch (err) {
     return Promise.reject(err);
