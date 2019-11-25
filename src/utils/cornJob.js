@@ -4,14 +4,36 @@ const moment = require('moment-timezone');
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '*/20 * * * * *',
-  () => {
-    var date = moment()
+  '*/10 * * * * *',
+  async () => {
+    let date = moment()
       .subtract(1, 'day')
-      .tz('Asia/Bangkok')
-      .format('DD/MM/YYYY');
+      .tz('Asia/Bangkok');
+    let success = false;
+    let count = 0;
+    let maxCount = 10;
+    // let name = date.format('ddd');
+    // if (name == 'Sat' || name == 'Sun') return;
+    date = date.format('DD/MM/YYYY');
 
-    helper.handleCornJob(date);
+    while (!success && count < maxCount) {
+      await new Promise(resolve =>
+        setTimeout(async () => {
+          await helper
+            .handleCornJob(date)
+            .then(() => {
+              console.log('cornSuccess:', count);
+              success = true;
+            })
+            .catch(err => {
+              console.log('cornError:', count);
+            });
+          resolve();
+        }, count * 1000)
+      );
+      count++;
+    }
+    console.log(success ? 'Success' : 'Fail', 'cornJob, count:', count);
   },
   {
     scheduled: true,

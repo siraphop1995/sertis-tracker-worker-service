@@ -5,8 +5,7 @@ const errorHandler = require('./errorHandler');
 
 handleCornJob = async date => {
   try {
-    // date = '03/10/2019';
-
+    date = '22/11/2019';
     // get selected from db
     let dateData = await db.findDate(date);
     dateData = dateData ? dateData : await db.createDate(date);
@@ -30,67 +29,60 @@ handleCornJob = async date => {
     const filterUserList = _filterList(dateData.users, timeList);
 
     const verifyUserList = await _verifyUserTime(filterUserList);
+    // const updateRes = await db.updateDateUserList(verifyUserList, dateData._id);
 
-    const updateRes = await db.updateDateUserList(verifyUserList, dateData._id);
-
-    dateData.users = verifyUserList;
-    console.log('Date found, add complete');
+    // dateData.users = verifyUserList;
+    // console.log('Date found, add complete');
     return Promise.resolve();
   } catch (err) {
-    err.location = 'loadFile()';
-    errorHandler(err);
+    return Promise.reject(err);
   }
 };
 
 _updateLineData = async (date, dateData) => {
-  try {
-    let lineData = await findLine(date);
-    lineData = lineData ? lineData : await db.createLine(date);
-    const { history } = lineData;
+  let lineData = await findLine(date);
+  lineData = lineData ? lineData : await db.createLine(date);
+  const { history } = lineData;
 
-    dateData.users = dateData.users.map(user => {
-      user.expectedWorkTime = 480;
-      // find line message of user
-      let lineHistory = history.filter(h => {
-        return (
-          h.uid === user.uid &&
-          h.isVerify &&
-          (h.messageIntent === 'leaveIntent' ||
-            h.messageIntent === 'absentIntent' ||
-            h.messageIntent === 'longAbsentIntent')
-        );
-      });
-
-      // if no line message, exit
-      if (lineHistory.length === 0) return user;
-
-      // return lastest line message of user
-      lineHistory = lineHistory.reduce((prev, current) =>
-        prev.timestamp > current.timestamp ? prev : current
+  dateData.users = dateData.users.map(user => {
+    user.expectedWorkTime = 480;
+    // find line message of user
+    let lineHistory = history.filter(h => {
+      return (
+        h.uid === user.uid &&
+        h.isVerify &&
+        (h.messageIntent === 'leaveIntent' ||
+          h.messageIntent === 'absentIntent' ||
+          h.messageIntent === 'longAbsentIntent')
       );
-
-      switch (lineHistory.messageIntent) {
-        case 'leaveIntent':
-          user.expectedWorkTime = 480 - lineHistory.messageVar.time * 60;
-          break;
-        case 'absentIntent':
-          user.expectedWorkTime = 0;
-          break;
-        case 'longAbsentIntent':
-          user.expectedWorkTime = 0;
-          break;
-      }
-      user.lineHistoryId = lineHistory._id;
-      user.lineIntent = lineHistory.messageIntent;
-      user.lineMessage = lineHistory.message;
-
-      return user;
     });
-    return dateData;
-  } catch (err) {
-    err.location = '_updateLineData()';
-    errorHandler(err);
-  }
+
+    // if no line message, exit
+    if (lineHistory.length === 0) return user;
+
+    // return lastest line message of user
+    lineHistory = lineHistory.reduce((prev, current) =>
+      prev.timestamp > current.timestamp ? prev : current
+    );
+
+    switch (lineHistory.messageIntent) {
+      case 'leaveIntent':
+        user.expectedWorkTime = 480 - lineHistory.messageVar.time * 60;
+        break;
+      case 'absentIntent':
+        user.expectedWorkTime = 0;
+        break;
+      case 'longAbsentIntent':
+        user.expectedWorkTime = 0;
+        break;
+    }
+    user.lineHistoryId = lineHistory._id;
+    user.lineIntent = lineHistory.messageIntent;
+    user.lineMessage = lineHistory.message;
+
+    return user;
+  });
+  return dateData;
 };
 
 /**
