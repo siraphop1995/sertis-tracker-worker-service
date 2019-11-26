@@ -5,6 +5,12 @@ axios.defaults.headers.common['authorization'] = AUTH_TOKEN;
 helloUser = async () => {
   return (await axios.get(`${USER_SERVER}/`)).data;
 };
+helloDate = async () => {
+  return (await axios.get(`${DATE_SERVER}/`)).data;
+};
+helloLine = async () => {
+  return (await axios.get(`${LINE_SERVER}/`)).data;
+};
 
 getUserList = async () => {
   return (await axios.get(`${USER_SERVER}/getAllUsers`)).data.user.map(user => {
@@ -62,6 +68,8 @@ createLine = async dateQuery => {
 
 module.exports = {
   helloUser,
+  helloDate,
+  helloLine,
   getUserList,
   findDate,
   createDate,
