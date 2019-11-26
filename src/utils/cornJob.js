@@ -3,12 +3,12 @@ const helper = require('./helperHandler');
 const moment = require('moment-timezone');
 const db = require('./dbHandler');
 
-cron.schedule('*/60 * * * * *', async () => {
+cron.schedule('*/10 * * * * *', async () => {
   let date = moment()
     .subtract(1, 'day')
     .tz('Asia/Bangkok');
   console.log('Run test:', date.format());
-  await helper.handleCornJob(date.format());
+  await helper.handleCornJob(date.format('DD/MM/YYYY'));
 });
 
 // schedule tasks to be run on the server
