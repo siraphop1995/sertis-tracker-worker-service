@@ -8,7 +8,7 @@ cron.schedule('*/60 * * * * *', async () => {
     .subtract(1, 'day')
     .tz('Asia/Bangkok');
   console.log('Run test:', date.format());
-  await helper.handleCornJob(date.format);
+  await helper.handleCornJob(date.format());
 });
 
 // schedule tasks to be run on the server
