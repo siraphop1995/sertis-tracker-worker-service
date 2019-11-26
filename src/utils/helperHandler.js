@@ -4,8 +4,9 @@ const csvFilePath = __dirname + '/clockingData.csv';
 
 handleCornJob = async date => {
   try {
-    date = '22/11/2019';
+    // date = '22/11/2019';
     // get selected from db
+    console.log('cornJob handling date:', date);
     let dateData = await db.findDate(date);
     dateData = dateData ? dateData : await db.createDate(date);
 
@@ -201,9 +202,10 @@ _verifyUserTime = async userList => {
       } else {
         let breakHour = _checkBreakTime(inTime);
 
-        breakHour = breakHour ? breakHour : 60;
-
         outTime = _limitOutTime(outTime);
+        if (user.uid === 'st095') {
+          console.log(outTime);
+        }
         const totalWorkTime = _subtractTime(inTime, outTime);
         const actualWorkTime = totalWorkTime - breakHour;
         user.totalWorkTime = totalWorkTime;
@@ -258,11 +260,11 @@ _toMinute = time => {
 
 _limitOutTime = time => {
   let [hh, mm] = _parseTime(time);
-  if (hh > 19) {
+  if (hh == 19 && mm > 30) {
+    mm = 30;
+  } else if (hh > 19) {
     hh = 19;
-    if (mm > 30) {
-      mm = 30;
-    }
+    mm = 30;
   }
   return `${hh}:${mm}`;
 };
@@ -282,7 +284,11 @@ _checkBreakTime = time => {
         breakTime = _findTimeDiff(time, '13:30:00');
       }
   }
-  if (inH >= 13 && inM > 30) breakTime = 0;
+  // if (inH >= 13 && inM > 30) breakTime = 0;
+  if (inH >= 13) {
+    if (inH == 13 && inM > 30) breakTime = 0;
+    if (inH >= 14) breakTime = 0;
+  }
   return breakTime;
 };
 

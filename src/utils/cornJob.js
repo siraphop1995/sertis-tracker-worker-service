@@ -3,12 +3,12 @@ const helper = require('./helperHandler');
 const moment = require('moment-timezone');
 const db = require('./dbHandler');
 
-cron.schedule('*/10 * * * * *', () => {
-  let date = moment()
-      .subtract(1, 'day')
-      .tz('Asia/Bangkok');
-    console.log('Run test:', date.format());
-});
+// cron.schedule('*/10 * * * * *', () => {
+//   let date = moment()
+//       .subtract(1, 'day')
+//       .tz('Asia/Bangkok');
+//     console.log('Run test:', date.format());
+// });
 
 // schedule tasks to be run on the server
 cron.schedule(
@@ -23,11 +23,11 @@ cron.schedule(
     let count = 0;
     const maxCount = 12;
     const retryTimer = 300000; //5 min in milisecond
-    let name = date.format('ddd');
-    if (name == 'Sat' || name == 'Sun') {
-      console.log('Weekend, exiting...');
-      return;
-    }
+    // let name = date.format('ddd');
+    // if (name == 'Sat' || name == 'Sun') {
+    //   console.log('Weekend, exiting...');
+    //   return;
+    // }
     date = date.format('DD/MM/YYYY');
 
     while (!success && count < maxCount) {
