@@ -3,9 +3,16 @@ const helper = require('./helperHandler');
 const moment = require('moment-timezone');
 const db = require('./dbHandler');
 
-cron.schedule('*/10 * * * * *', async () => {
+// cron.schedule('*/10 * * * * *', async () => {
+//   let date = moment()
+//     .subtract(1, 'day')
+//     .tz('Asia/Bangkok');
+//   console.log('Run test:', date.format());
+// });
+
+cron.schedule('* */1 * * *', async () => {
   let date = moment()
-    .subtract(1, 'day')
+    .subtract('day')
     .tz('Asia/Bangkok');
   console.log('Run test:', date.format());
 });
