@@ -25,7 +25,7 @@ cron.schedule(
     let date = moment()
       .subtract('day')
       .tz('Asia/Bangkok');
-    console.log('Timer log:', date.format());
+    console.log('Timer log schedule:', date.format());
   },
   {
     scheduled: true,
@@ -34,12 +34,12 @@ cron.schedule(
 );
 
 cron.schedule(
-  '20 14 * * *',
+  '50-55 12 * * *',
   () => {
     let date = moment()
       .subtract('day')
       .tz('Asia/Bangkok');
-    console.log('Wake up service:', date.format());
+    console.log('Wake up schedule:', date.format());
     db.helloUser().then(res => {
       console.log(res.message);
     });
@@ -58,12 +58,12 @@ cron.schedule(
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '22 14 * * *',
+  '0 1 * * *',
   async () => {
     let date = moment()
       .subtract(1, 'day')
       .tz('Asia/Bangkok');
-    console.log('Run cornJob:', date.format());
+    console.log('Run cornJob schedule:', date.format());
 
     let success = false;
     let count = 0;
@@ -77,6 +77,7 @@ cron.schedule(
     date = date.format('DD/MM/YYYY');
 
     while (!success && count < maxCount) {
+      count++;
       await new Promise(resolve =>
         setTimeout(async () => {
           await helper
@@ -91,7 +92,6 @@ cron.schedule(
           resolve();
         }, count * retryTimer)
       );
-      count++;
     }
     console.log(success ? 'Success' : 'Fail', 'cornJob, count:', count);
   },
