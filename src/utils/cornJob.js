@@ -19,14 +19,14 @@ const db = require('./dbHandler');
 //   });
 // });
 
-cron.schedule('* */1 * * *', async () => {
+cron.schedule('0 */1 * * *', async () => {
   let date = moment()
     .subtract('day')
     .tz('Asia/Bangkok');
   console.log('Timer log:', date.format());
 });
 
-cron.schedule('52 8 * * *', () => {
+cron.schedule('55 8 * * *', () => {
   let date = moment()
     .subtract('day')
     .tz('Asia/Bangkok');
