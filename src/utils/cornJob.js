@@ -20,7 +20,7 @@ const db = require('./dbHandler');
 // });
 
 cron.schedule(
-  '12 14 * * *',
+  '0 */1 * * *',
   async () => {
     let date = moment()
       .subtract('day')
@@ -33,25 +33,32 @@ cron.schedule(
   }
 );
 
-cron.schedule('55 8 * * *', () => {
-  let date = moment()
-    .subtract('day')
-    .tz('Asia/Bangkok');
-  console.log('Wake up service:', date.format());
-  // db.helloUser().then(res => {
-  //   console.log(res.message);
-  // });
-  // db.helloDate().then(res => {
-  //   console.log(res.message);
-  // });
-  // db.helloLine().then(res => {
-  //   console.log(res.message);
-  // });
-});
+cron.schedule(
+  '20 14 * * *',
+  () => {
+    let date = moment()
+      .subtract('day')
+      .tz('Asia/Bangkok');
+    console.log('Wake up service:', date.format());
+    db.helloUser().then(res => {
+      console.log(res.message);
+    });
+    db.helloDate().then(res => {
+      console.log(res.message);
+    });
+    db.helloLine().then(res => {
+      console.log(res.message);
+    });
+  },
+  {
+    scheduled: true,
+    timezone: 'Asia/Bangkok'
+  }
+);
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '* 9 * * *',
+  '22 14 * * *',
   async () => {
     let date = moment()
       .subtract(1, 'day')
