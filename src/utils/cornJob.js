@@ -20,7 +20,7 @@ const db = require('./dbHandler');
 // });
 
 cron.schedule(
-  '10 14 * * *',
+  '12 14 * * *',
   async () => {
     let date = moment()
       .subtract('day')
