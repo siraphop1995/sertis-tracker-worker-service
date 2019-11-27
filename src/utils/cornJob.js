@@ -19,12 +19,19 @@ const db = require('./dbHandler');
 //   });
 // });
 
-cron.schedule('0 */1 * * *', async () => {
-  let date = moment()
-    .subtract('day')
-    .tz('Asia/Bangkok');
-  console.log('Timer log:', date.format());
-});
+cron.schedule(
+  '10 14 * * *',
+  async () => {
+    let date = moment()
+      .subtract('day')
+      .tz('Asia/Bangkok');
+    console.log('Timer log:', date.format());
+  },
+  {
+    scheduled: true,
+    timezone: 'Asia/Bangkok'
+  }
+);
 
 cron.schedule('55 8 * * *', () => {
   let date = moment()
