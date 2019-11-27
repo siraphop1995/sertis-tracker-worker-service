@@ -26,25 +26,25 @@ cron.schedule('0 */1 * * *', async () => {
   console.log('Timer log:', date.format());
 });
 
-cron.schedule('55 8 * * *', () => {
+cron.schedule('59 8 * * *', () => {
   let date = moment()
     .subtract('day')
     .tz('Asia/Bangkok');
   console.log('Wake up service:', date.format());
-  db.helloUser().then(res => {
-    console.log(res.message);
-  });
-  db.helloDate().then(res => {
-    console.log(res.message);
-  });
-  db.helloLine().then(res => {
-    console.log(res.message);
-  });
+  // db.helloUser().then(res => {
+  //   console.log(res.message);
+  // });
+  // db.helloDate().then(res => {
+  //   console.log(res.message);
+  // });
+  // db.helloLine().then(res => {
+  //   console.log(res.message);
+  // });
 });
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '* 9 * * *',
+  '0 10 * * *',
   async () => {
     let date = moment()
       .subtract(1, 'day')
