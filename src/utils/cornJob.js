@@ -26,7 +26,7 @@ cron.schedule('* */1 * * *', async () => {
   console.log('Timer log:', date.format());
 });
 
-cron.schedule('50 0 * * *', () => {
+cron.schedule('52 8 * * *', () => {
   let date = moment()
     .subtract('day')
     .tz('Asia/Bangkok');
@@ -44,7 +44,7 @@ cron.schedule('50 0 * * *', () => {
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '* 1 * * *',
+  '* 9 * * *',
   async () => {
     let date = moment()
       .subtract(1, 'day')
