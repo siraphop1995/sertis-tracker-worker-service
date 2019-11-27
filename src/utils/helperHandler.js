@@ -204,6 +204,11 @@ _verifyUserTime = async userList => {
 
         outTime = _limitOutTime(outTime);
         const totalWorkTime = _subtractTime(inTime, outTime);
+        if (user.uid === 'st032' || user.uid === 'st031') {
+          console.log(user.uid);
+
+          console.log(totalWorkTime, breakHour);
+        }
         const actualWorkTime = totalWorkTime - breakHour;
         user.totalWorkTime = totalWorkTime;
         user.actualWorkTime = actualWorkTime;
@@ -274,11 +279,13 @@ _checkBreakTime = time => {
     case 12:
       if (inM >= 30) {
         breakTime = _findTimeDiff(time, '13:30:00');
+        breakTime = _toMinute(breakTime)
       }
       break;
     case 13:
       if (inM <= 30) {
         breakTime = _findTimeDiff(time, '13:30:00');
+        breakTime = _toMinute(breakTime)
       }
   }
   if (inH >= 13) {
