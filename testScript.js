@@ -5,7 +5,7 @@ let date = moment()
   .subtract(1, 'day')
   .tz('Asia/Bangkok')
   .format('DD/MM/YYYY');
-// date = `22/11/2019`;
+date = `28/11/2019`;
 
 _multiLoad = async (date, n) => {
   const [dd, mm, yy] = _parseDate(date);
@@ -22,5 +22,5 @@ _multiLoad = async (date, n) => {
 
 _parseDate = time => time.split('/').map(t => parseInt(t, 10));
 
-// _multiLoad(date, 30);
+// _multiLoad(date, 120);
 helper.handleCornJob(date);

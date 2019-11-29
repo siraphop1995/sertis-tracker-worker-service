@@ -2,22 +2,23 @@ const cron = require('node-cron');
 const helper = require('./helperHandler');
 const moment = require('moment-timezone');
 const db = require('./dbHandler');
+const axios = require('axios');
 
-// cron.schedule('*/10 * * * * *', () => {
-//   let date = moment()
-//     .subtract(1, 'day')
-//     .tz('Asia/Bangkok');
-//   console.log('Run test:', date.format());
-//   db.helloUser().then(res => {
-//     console.log(res.message);
-//   });
-//   db.helloDate().then(res => {
-//     console.log(res.message);
-//   });
-//   db.helloLine().then(res => {
-//     console.log(res.message);
-//   });
-// });
+cron.schedule('*/20 * * * *', () => {
+  let date = moment()
+    .subtract(1, 'day')
+    .tz('Asia/Bangkok');
+  console.log('Run test:', date.format());
+  // axios.get('https://stt-user-service.herokuapp.com/').then(res => {
+  //   console.log(res.data.message);
+  // });
+  // axios.get('https://stt-date-service.herokuapp.com').then(res => {
+  //   console.log(res.data.message);
+  // });
+  // axios.get('https://stt-line-service.herokuapp.com').then(res => {
+  //   console.log(res.data.message);
+  // });
+});
 
 cron.schedule(
   '0 */1 * * *',
@@ -34,7 +35,7 @@ cron.schedule(
 );
 
 cron.schedule(
-  '50-55 12 * * *',
+  '59 8 * * *',
   () => {
     let date = moment()
       .subtract('day')
@@ -58,7 +59,7 @@ cron.schedule(
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '0 1 * * *',
+  '1 9 * * *',
   async () => {
     let date = moment()
       .subtract(1, 'day')

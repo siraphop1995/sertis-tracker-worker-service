@@ -98,10 +98,8 @@ _loadDateList = async date => {
   });
   return timeList;
 };
-
 /**
- * Filter timeList so that only select the
- * time where that user exist in database
+ * dsad
  */
 _filterList = (userList, timeList) => {
   for (i in timeList) {
