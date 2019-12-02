@@ -4,21 +4,21 @@ const moment = require('moment-timezone');
 const db = require('./dbHandler');
 const axios = require('axios');
 
-cron.schedule('*/20 * * * *', () => {
-  let date = moment()
-    .subtract(1, 'day')
-    .tz('Asia/Bangkok');
-  console.log('Run test:', date.format());
-  axios.get('https://stt-user-service.herokuapp.com/').then(res => {
-    console.log(res.data.message);
-  });
-  axios.get('https://stt-date-service.herokuapp.com').then(res => {
-    console.log(res.data.message);
-  });
-  axios.get('https://stt-line-service.herokuapp.com').then(res => {
-    console.log(res.data.message);
-  });
-});
+// cron.schedule('*/20 * * * *', () => {
+//   let date = moment()
+//     .subtract(1, 'day')
+//     .tz('Asia/Bangkok');
+//   console.log('Run test:', date.format());
+//   axios.get('https://stt-user-service.herokuapp.com/').then(res => {
+//     console.log(res.data.message);
+//   });
+//   axios.get('https://stt-date-service.herokuapp.com').then(res => {
+//     console.log(res.data.message);
+//   });
+//   axios.get('https://stt-line-service.herokuapp.com').then(res => {
+//     console.log(res.data.message);
+//   });
+// });
 
 cron.schedule(
   '0 */1 * * *',
