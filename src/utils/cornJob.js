@@ -4,21 +4,21 @@ const moment = require('moment-timezone');
 const db = require('./dbHandler');
 const axios = require('axios');
 
-cron.schedule('*/20 * * * *', () => {
-  let date = moment()
-    .subtract(1, 'day')
-    .tz('Asia/Bangkok');
-  console.log('Run test:', date.format());
-  // axios.get('https://stt-user-service.herokuapp.com/').then(res => {
-  //   console.log(res.data.message);
-  // });
-  // axios.get('https://stt-date-service.herokuapp.com').then(res => {
-  //   console.log(res.data.message);
-  // });
-  // axios.get('https://stt-line-service.herokuapp.com').then(res => {
-  //   console.log(res.data.message);
-  // });
-});
+// cron.schedule('*/20 * * * *', () => {
+//   let date = moment()
+//     .subtract(1, 'day')
+//     .tz('Asia/Bangkok');
+//   console.log('Run test:', date.format());
+//   axios.get('https://stt-user-service.herokuapp.com/').then(res => {
+//     console.log(res.data.message);
+//   });
+//   axios.get('https://stt-date-service.herokuapp.com').then(res => {
+//     console.log(res.data.message);
+//   });
+//   axios.get('https://stt-line-service.herokuapp.com').then(res => {
+//     console.log(res.data.message);
+//   });
+// });
 
 cron.schedule(
   '0 */1 * * *',
@@ -35,7 +35,7 @@ cron.schedule(
 );
 
 cron.schedule(
-  '59 8 * * *',
+  '50-55 12 * * *',
   () => {
     let date = moment()
       .subtract('day')
@@ -59,7 +59,7 @@ cron.schedule(
 
 // schedule tasks to be run on the server
 cron.schedule(
-  '1 9 * * *',
+  '0 9 * * *',
   async () => {
     let date = moment()
       .subtract(1, 'day')
@@ -68,38 +68,64 @@ cron.schedule(
 
     let success = false;
     let count = 0;
-    const maxCount = 12;
+    const maxCount = 12; //no of retry
     const retryTimer = 300000; //5 min in milisecond
-    // let name = date.format('ddd');
-    // if (name == 'Sat' || name == 'Sun') {
-    //   console.log('Weekend, exiting...');
-    //   return;
-    // }
-    date = date.format('DD/MM/YYYY');
 
+    date = date.format('DD/MM/YYYY');
     while (!success && count < maxCount) {
-      count++;
       await new Promise(resolve =>
         setTimeout(async () => {
           await helper
             .handleCornJob(date)
             .then(() => {
-              console.log('cornSuccess, count:', count);
+              console.log('cornSuccess, tries:', count + 1);
               success = true;
             })
             .catch(err => {
-              console.log('cornError, count:', count);
+              console.log('cornError, tries:', count + 1);
             });
           resolve();
         }, count * retryTimer)
       );
+      count++;
     }
-    console.log(success ? 'Success' : 'Fail', 'cornJob, count:', count);
+    console.log(success ? 'Success' : 'Fail', 'cornJob, tries:', count);
   },
   {
     scheduled: true,
     timezone: 'Asia/Bangkok'
   }
 );
+
+// Special schedule
+cron.schedule(
+  '50 46 11 * * *',
+  async () => {
+    let date = `28/11/2019`;
+    console.log('Run cornJob special schedule:', date);
+
+    _multiLoad(date, 30);
+  },
+  {
+    scheduled: true,
+    timezone: 'Asia/Bangkok'
+  }
+);
+
+_multiLoad = async (date, n) => {
+  const [dd, mm, yy] = _parseDate(date);
+
+  for (let i = 0; i < n; i++) {
+    const t = moment([yy, mm - 1, dd])
+      .subtract(i, 'day')
+      .tz('Asia/Bangkok')
+      .format('DD/MM/YYYY');
+
+      await helper.handleCornJob(t);
+  }
+};
+
+_parseDate = time => time.split('/').map(t => parseInt(t, 10));
+
 
 module.exports = cron;
