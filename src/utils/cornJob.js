@@ -4,21 +4,21 @@ const moment = require('moment-timezone');
 const db = require('./dbHandler');
 const axios = require('axios');
 
-// cron.schedule('*/20 * * * *', () => {
-//   let date = moment()
-//     .subtract(1, 'day')
-//     .tz('Asia/Bangkok');
-//   console.log('Run test:', date.format());
-//   axios.get('https://stt-user-service.herokuapp.com/').then(res => {
-//     console.log(res.data.message);
-//   });
-//   axios.get('https://stt-date-service.herokuapp.com').then(res => {
-//     console.log(res.data.message);
-//   });
-//   axios.get('https://stt-line-service.herokuapp.com').then(res => {
-//     console.log(res.data.message);
-//   });
-// });
+cron.schedule('*/20 * * * *', () => {
+  let date = moment()
+    .subtract(1, 'day')
+    .tz('Asia/Bangkok');
+  console.log('Run test:', date.format());
+  axios.get('https://stt-user-service.herokuapp.com/').then(res => {
+    console.log(res.data.message);
+  });
+  axios.get('https://stt-date-service.herokuapp.com').then(res => {
+    console.log(res.data.message);
+  });
+  axios.get('https://stt-line-service.herokuapp.com').then(res => {
+    console.log(res.data.message);
+  });
+});
 
 cron.schedule(
   '0 */1 * * *',
@@ -34,6 +34,9 @@ cron.schedule(
   }
 );
 
+/**
+ * Special schedule to wake up Heroku service.
+ */
 cron.schedule(
   '50-55 12 * * *',
   () => {
@@ -57,7 +60,11 @@ cron.schedule(
   }
 );
 
-// schedule tasks to be run on the server
+/**
+ * Daily schedule which run every 1am to handle user/line data.
+ * If error occur, will retry up to 12 times. Each retry will
+ * occor on incremental delay.
+ */
 cron.schedule(
   '0 9 * * *',
   async () => {
@@ -97,20 +104,20 @@ cron.schedule(
   }
 );
 
-// Special schedule
-cron.schedule(
-  '50 46 11 * * *',
-  async () => {
-    let date = `28/11/2019`;
-    console.log('Run cornJob special schedule:', date);
+// // Special schedule
+// cron.schedule(
+//   '50 46 11 * * *',
+//   async () => {
+//     let date = `28/11/2019`;
+//     console.log('Run cornJob special schedule:', date);
 
-    _multiLoad(date, 30);
-  },
-  {
-    scheduled: true,
-    timezone: 'Asia/Bangkok'
-  }
-);
+//     _multiLoad(date, 30);
+//   },
+//   {
+//     scheduled: true,
+//     timezone: 'Asia/Bangkok'
+//   }
+// );
 
 _multiLoad = async (date, n) => {
   const [dd, mm, yy] = _parseDate(date);
@@ -125,6 +132,12 @@ _multiLoad = async (date, n) => {
   }
 };
 
+/**
+ * Parse date string into array of date (number)
+ * @param     {string} date - string of date
+ * @returns   {number} number
+ * @example    _parseDate('10/10/2019')
+ */
 _parseDate = time => time.split('/').map(t => parseInt(t, 10));
 
 
