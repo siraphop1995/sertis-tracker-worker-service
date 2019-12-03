@@ -24,12 +24,12 @@ handleCornJob = async date => {
     //  if date does not exist, create new date
     dateData = dateData ? dateData : await db.createDate(date);
 
-    //  stop the process if not workday
-    const { dateType } = dateData;
-    if (dateType !== 'workday') {
-      console.log(`Date is a ${dateType}, exiting......`);
-      return;
-    }
+    // //  stop the process if not workday
+    // const { dateType } = dateData;
+    // if (dateType !== 'workday') {
+    //   console.log(`Date is a ${dateType}, exiting......`);
+    //   return;
+    // }
 
     //  load line data and filter for the lastest message
     dateData = await _updateLineData(date, dateData);
@@ -38,10 +38,6 @@ handleCornJob = async date => {
     const timeList = await _loadDateList(date);
 
     //  if no date in csv file, exit
-    if (timeList.length === 0) {
-      console.log(`No date found, exting......`);
-      return;
-    }
 
     // get a list of user with filter IN and OUT time
     const filterUserList = _filterList(dateData.users, timeList);
@@ -49,7 +45,11 @@ handleCornJob = async date => {
     const verifyUserList = await _verifyUserTime(filterUserList);
     const updateRes = await db.updateDateUserList(verifyUserList, dateData._id);
 
-    console.log('Date found, add complete');
+    if (timeList.length === 0) {
+      console.log(`No date found....................`);
+    } else {
+      console.log('Date found, add complete');
+    }
     return Promise.resolve();
   } catch (err) {
     return Promise.reject(err);
@@ -74,7 +74,7 @@ _updateLineData = async (date, dateData) => {
 
   // filter to find all line message of each user
   dateData.users = dateData.users.map(user => {
-    user.expectedWorkTime = 480;
+    user.expectedWorkTime = dateData.dateType !== 'workday' ? 0 : 480;
     // find line message of user
     let lineHistory = history.filter(h => {
       return (
@@ -270,13 +270,13 @@ _verifyUserTime = async userList => {
         user.totalWorkTime = 0;
         user.actualWorkTime = 0;
       } else {
-        let breakHour = _checkBreakTime(inTime);
+        let breakHour = _checkBreakTime(inTime, outTime);
 
         outTime = _limitOutTime(outTime);
         const totalWorkTime = _subtractTime(inTime, outTime);
         const actualWorkTime = totalWorkTime - breakHour;
         user.totalWorkTime = totalWorkTime;
-        user.actualWorkTime = actualWorkTime;
+        user.actualWorkTime = actualWorkTime < 0 ? 0 : actualWorkTime;
       }
       const { actualWorkTime, expectedWorkTime } = user;
 
@@ -326,7 +326,7 @@ _subtractTime = (inTime, outTime) => {
 
 /**
  * Parse date string into array of date (number)
- * 
+ *
  * @param     {string} date - string of date
  * @returns   {number} number
  */
@@ -334,7 +334,7 @@ _parseTime = time => time.split(':').map(t => parseInt(t, 10));
 
 /**
  * Convert time in number(min) to string(hour)
- * 
+ *
  * @param     {number} time - time in minute
  * @returns   {string} time in hour
  */
@@ -349,7 +349,7 @@ _toHour = time => {
 
 /**
  * Convert time in number(min) to string(hour)
- * 
+ *
  * @param     {string} time - time in hour
  * @returns   {number} time in minute
  */
@@ -361,7 +361,7 @@ _toMinute = time => {
 /**
  * Check if outTime is greater than 19:30.
  * if it is, limite it to 19:30
- * 
+ *
  * @param     {string} time - time
  * @returns   {string} time
  */
@@ -380,24 +380,30 @@ _limitOutTime = time => {
  * Check if user come during break time, if the user does,
  * recalculate breaktime accordingly.
  * Breaktime will start at 12:30 and end at 13:30
- * 
+ *
  * @param     {string} time - time
  * @returns   {string} time
  */
-_checkBreakTime = time => {
-  const [inH, inM] = _parseTime(time);
+_checkBreakTime = (inTime, outTime) => {
+  const [inH, inM] = _parseTime(inTime);
+  const [outH, outM] = _parseTime(outTime);
+
+  if (outH <= 12) {
+    if (outH == 12 && outM < 30) return 0;
+    if (outH < 12) return 0;
+  }
 
   let breakTime = 60;
   switch (inH) {
     case 12:
       if (inM >= 30) {
-        breakTime = _findTimeDiff(time, '13:30:00');
+        breakTime = _findTimeDiff(inTime, '13:30:00');
         breakTime = _toMinute(breakTime);
       }
       break;
     case 13:
       if (inM <= 30) {
-        breakTime = _findTimeDiff(time, '13:30:00');
+        breakTime = _findTimeDiff(inTime, '13:30:00');
         breakTime = _toMinute(breakTime);
       }
   }
