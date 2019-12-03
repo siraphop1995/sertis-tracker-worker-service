@@ -21,7 +21,7 @@ const axios = require('axios');
 // });
 
 cron.schedule(
-  '0 */1 * * *',
+  '0 */2 * * *',
   async () => {
     let date = moment()
       .subtract('day')
@@ -66,7 +66,7 @@ cron.schedule(
  * occor on incremental delay.
  */
 cron.schedule(
-  '0 9 * * *',
+  '0 1 * * *',
   async () => {
     let date = moment()
       .subtract(1, 'day')

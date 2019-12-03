@@ -5,7 +5,8 @@
  * 
  * This script can load mulpitle date at the same time
  */
-
+const { USER_SERVER, DATE_SERVER, LINE_SERVER, AUTH_TOKEN } = process.env;
+console.log(USER_SERVER)
 const helper = require('./src/utils/helperHandler');
 const moment = require('moment-timezone');
 
@@ -46,4 +47,4 @@ _parseDate = time => time.split('/').map(t => parseInt(t, 10));
 
 
 // _multiLoad(date, 120);
-helper.handleCornJob(date);
+// helper.handleCornJob(date);
