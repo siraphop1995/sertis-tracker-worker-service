@@ -68,4 +68,4 @@ cleanCSVFile = async () => {
 
 // cleanCSVFile(date)
 // _multiLoad(date, 70);
-helper.handleCornJob(date);
+// helper.handleCornJob(date);
